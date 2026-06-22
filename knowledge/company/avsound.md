@@ -33,5 +33,10 @@ _[Добавь сотрудников]_
 ## Важные ссылки
 
 - GitHub: https://github.com/avsoundmsk-ux/avsound
-- Сервер: Hetzner
 - База знаний: Obsidian + GitHub
+
+## Сервер Hetzner
+
+- **IPv6:** 2a01:4f8:c015:a6f2::/64
+- **IPv4:** _[уточни в консоли Hetzner]_
+- **MCP сервер порт:** 8080
