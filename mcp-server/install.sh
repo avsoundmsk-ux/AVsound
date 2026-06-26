@@ -30,7 +30,9 @@ if [ ! -f .env ]; then
     cp .env.example .env
     echo ""
     echo "⚠️  Заполни /opt/avsound/mcp-server/.env:"
-    echo "   GITHUB_TOKEN=ghp_..."
+    echo "   GITHUB_TOKEN=ghp_...        (база знаний)"
+    echo "   ARK_API_KEY=...             (Seedance 2 — генерация видео)"
+    echo "   SEEDANCE_MODEL=seedance-2-0 (ID модели/эндпоинта Ark)"
     echo ""
 fi
 

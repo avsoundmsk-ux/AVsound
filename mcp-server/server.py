@@ -9,6 +9,8 @@ from datetime import datetime
 import httpx
 from mcp.server.fastmcp import FastMCP
 
+import seedance
+
 GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
 GITHUB_OWNER = os.environ.get("GITHUB_OWNER", "avsoundmsk-ux")
 GITHUB_REPO = os.environ.get("GITHUB_REPO", "avsound")
@@ -149,6 +151,82 @@ async def read_knowledge(category: str, title: str) -> str:
         return base64.b64decode(data["content"]).decode()
     except Exception:
         return f"Запись '{title}' не найдена в {category}"
+
+
+@mcp.tool()
+async def generate_video(
+    prompt: str,
+    image_url: str = "",
+    resolution: str = "1080p",
+    ratio: str = "16:9",
+    duration: int = 5,
+    wait: bool = False,
+) -> str:
+    """
+    Сгенерировать видео через Seedance 2 (Volcengine/BytePlus Ark).
+    prompt: текстовое описание сцены.
+    image_url: ссылка на стартовый кадр — включает режим image-to-video (i2v).
+               Пусто = text-to-video (t2v).
+    resolution: 480p | 720p | 1080p.
+    ratio: 16:9 | 9:16 | 1:1 и т.п.
+    duration: длительность в секундах (обычно 5 или 10).
+    wait: если True — дождаться готового видео и вернуть ссылку (может занять минуты).
+          Если False — сразу вернуть task_id для опроса через check_video.
+    """
+    try:
+        task = await seedance.create_task(
+            prompt=prompt,
+            image_url=image_url,
+            resolution=resolution,
+            ratio=ratio,
+            duration=duration,
+        )
+    except httpx.HTTPStatusError as e:
+        return f"❌ Ошибка Ark API ({e.response.status_code}): {e.response.text}"
+    except Exception as e:
+        return f"❌ {e}"
+
+    task_id = task.get("id", "")
+    mode = "image-to-video" if image_url else "text-to-video"
+
+    if not wait:
+        return (
+            f"🎬 Задача Seedance 2 создана ({mode}).\n"
+            f"task_id: {task_id}\n"
+            f"Проверь готовность: check_video(\"{task_id}\")"
+        )
+
+    final = await seedance.wait_for_task(task_id)
+    return _format_task(task_id, final)
+
+
+@mcp.tool()
+async def check_video(task_id: str) -> str:
+    """
+    Проверить статус задачи генерации видео Seedance 2 и получить ссылку на результат.
+    task_id: идентификатор, полученный из generate_video.
+    """
+    try:
+        task = await seedance.get_task(task_id)
+    except httpx.HTTPStatusError as e:
+        return f"❌ Ошибка Ark API ({e.response.status_code}): {e.response.text}"
+    except Exception as e:
+        return f"❌ {e}"
+    return _format_task(task_id, task)
+
+
+def _format_task(task_id: str, task: dict) -> str:
+    status = task.get("status", "unknown")
+    if status == "succeeded":
+        url = (task.get("content") or {}).get("video_url", "")
+        return f"✅ Видео готово.\ntask_id: {task_id}\nСсылка: {url}"
+    if status in ("failed", "cancelled"):
+        err = task.get("error") or {}
+        return f"❌ Задача {status}.\ntask_id: {task_id}\n{err.get('message', err)}"
+    return (
+        f"⏳ Статус: {status}.\ntask_id: {task_id}\n"
+        f"Повтори позже: check_video(\"{task_id}\")"
+    )
 
 
 if __name__ == "__main__":

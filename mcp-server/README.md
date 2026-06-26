@@ -37,6 +37,31 @@ systemctl restart avsound-mcp
 - `search_knowledge` — найти информацию
 - `list_knowledge` — показать список
 - `read_knowledge` — прочитать запись
+- `generate_video` — сгенерировать видео через Seedance 2 (t2v / i2v)
+- `check_video` — проверить статус и получить ссылку на готовое видео
+
+## Seedance 2 — генерация видео
+
+Поставщик — официальный **Volcengine / BytePlus Ark** (ByteDance ModelArk).
+Поддерживаются text-to-video и image-to-video. Генерация асинхронная:
+`generate_video` создаёт задачу, `check_video` опрашивает статус и отдаёт ссылку.
+
+Настрой ключ в `.env` (см. `.env.example`):
+
+```bash
+ARK_API_KEY=...                                   # ключ из консоли Ark
+ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/v3   # или BytePlus ap-southeast
+SEEDANCE_MODEL=seedance-2-0                        # ID модели/эндпоинта Seedance 2
+systemctl restart avsound-mcp
+```
+
+Где взять: консоль Volcengine Ark (https://console.volcengine.com/ark) или
+BytePlus ModelArk → создать API Key и эндпоинт модели Seedance 2.
+
+Пример вызова:
+- text-to-video: `generate_video("концертная сцена, дым, лучи света", resolution="1080p", ratio="16:9", duration=5)`
+- image-to-video: `generate_video("камера медленно наезжает", image_url="https://...jpg")`
+- затем: `check_video("<task_id>")` → ссылка на видео
 
 ## Obsidian синхронизация
 
