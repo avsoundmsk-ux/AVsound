@@ -24,9 +24,10 @@ import httpx
 ARK_BASE_URL = os.environ.get("ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3").rstrip("/")
 
 # Две модели Seedance 2.0. Ключ алиаса -> ID модели/эндпоинта Ark.
+# Дефолты — официальные ID Volcengine Ark (на BytePlus префикс dreamina- вместо doubao-).
 MODELS = {
-    "2.0": os.environ.get("SEEDANCE_MODEL", "seedance-2-0"),
-    "mini": os.environ.get("SEEDANCE_MODEL_MINI", "seedance-2-0-mini"),
+    "2.0": os.environ.get("SEEDANCE_MODEL", "doubao-seedance-2-0-260128"),
+    "mini": os.environ.get("SEEDANCE_MODEL_MINI", "doubao-seedance-2-0-mini-260615"),
 }
 DEFAULT_MODEL = "2.0"
 

@@ -53,13 +53,28 @@ systemctl restart avsound-mcp
 ```bash
 ARK_API_KEY=...                                   # ключ из консоли Ark
 ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/v3   # или BytePlus ap-southeast
-SEEDANCE_MODEL=seedance-2-0                        # ID эндпоинта Seedance 2.0
-SEEDANCE_MODEL_MINI=seedance-2-0-mini             # ID эндпоинта Seedance 2.0 mini
+SEEDANCE_MODEL=doubao-seedance-2-0-260128          # ID Seedance 2.0
+SEEDANCE_MODEL_MINI=doubao-seedance-2-0-mini-260615  # ID Seedance 2.0 mini
 systemctl restart avsound-mcp
 ```
 
 Где взять: консоль Volcengine Ark (https://console.volcengine.com/ark) или
-BytePlus ModelArk → создать API Key и эндпоинты обеих моделей Seedance 2.0.
+BytePlus ModelArk → создать API Key и **активировать (开通)** обе модели Seedance 2.0.
+ID моделей: Volcengine — `doubao-seedance-2-0-*`, BytePlus — `dreamina-seedance-2-0-*`.
+
+### Проверка подключения моделей
+
+Если поставщик показывает, что модели «не подключены», запусти диагностику:
+
+```bash
+cd /opt/avsound/mcp-server
+venv/bin/python check_connection.py
+```
+
+Скрипт дёрнет обе модели и точно скажет: неверный ключ (401/403), модель не
+активирована в аккаунте (model not found / access denied) или всё работает
+(задача принята). Частая причина «не подключены» — неверный ID модели в `.env`
+или не активированный доступ к модели в консоли Ark.
 
 Пример вызова:
 - video-to-video (Seedance 2.0): `generate_video("добавь дым и лучи света", video_url="https://...mp4", model="2.0")`
