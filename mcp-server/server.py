@@ -157,16 +157,20 @@ async def read_knowledge(category: str, title: str) -> str:
 async def generate_video(
     prompt: str,
     image_url: str = "",
+    video_url: str = "",
+    model: str = "2.0",
     resolution: str = "1080p",
     ratio: str = "16:9",
     duration: int = 5,
     wait: bool = False,
 ) -> str:
     """
-    Сгенерировать видео через Seedance 2 (Volcengine/BytePlus Ark).
-    prompt: текстовое описание сцены.
-    image_url: ссылка на стартовый кадр — включает режим image-to-video (i2v).
-               Пусто = text-to-video (t2v).
+    Сгенерировать видео через Seedance 2.0 (Volcengine/BytePlus Ark).
+    prompt: текстовое описание сцены / правок.
+    video_url: ссылка на исходное видео — включает режим video-to-video (v2v).
+    image_url: ссылка на стартовый кадр — режим image-to-video (i2v).
+               Без video_url и image_url = text-to-video (t2v).
+    model: '2.0' (полная) или 'mini' (Seedance 2.0 mini).
     resolution: 480p | 720p | 1080p.
     ratio: 16:9 | 9:16 | 1:1 и т.п.
     duration: длительность в секундах (обычно 5 или 10).
@@ -177,6 +181,8 @@ async def generate_video(
         task = await seedance.create_task(
             prompt=prompt,
             image_url=image_url,
+            video_url=video_url,
+            model=model,
             resolution=resolution,
             ratio=ratio,
             duration=duration,
@@ -187,7 +193,13 @@ async def generate_video(
         return f"❌ {e}"
 
     task_id = task.get("id", "")
-    mode = "image-to-video" if image_url else "text-to-video"
+    if video_url:
+        mode = "video-to-video"
+    elif image_url:
+        mode = "image-to-video"
+    else:
+        mode = "text-to-video"
+    mode += f" / {seedance.resolve_model(model)}"
 
     if not wait:
         return (
